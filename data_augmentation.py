@@ -14,6 +14,8 @@ from imgaug import augmenters as iaa
 import imgaug as ia
 import torchvision.transforms.functional as TF
 import torch.nn as nn
+import torch.nn.functional as F
+from unet import *
 
 
 class ImgAugTransform:
@@ -36,17 +38,16 @@ transforms_via_imgaug = ImgAugTransform()
 # _, label = cv2.threshold(label, 5, 255, cv2.THRESH_BINARY)
 
 class ConvertToBinary():
-    def __init__(self):
-        self.a = 1
+    def __init__(self, threshold=0, value=255, type = cv2.THRESH_BINARY):
+        self.threshold = threshold
+        self.value = value
+        self.type = type
 
     def __call__(self, nparray):
-        _, nparray = cv2.threshold(nparray, 0, 255, cv2.THRESH_BINARY)
+        _, nparray[:, :, 1:] = cv2.threshold(nparray[:, :, 1:], self.threshold, self.value, self.type)
         return nparray
 
 convert_to_binary = ConvertToBinary()
-
-
-
 
 
 
@@ -93,6 +94,7 @@ class NeuronDataset(Dataset):
 
 
         image_white_black = np.stack([image, label, label], axis=-1)
+        # print(image_white_black[:, :, 1:].shape)
 
         if self.transform:
             image_white_black = self.transform[self.phase](image_white_black)
@@ -105,32 +107,49 @@ class NeuronDataset(Dataset):
         # label = np.array(label)
 
         label = image_white_black[1:]
-        label[0] = 255 - label[0]
+        label[1] = 255 - label[1]
 
         return image, label
 
-DATA_DIR = './data'
 
-neuron_dataset = NeuronDataset(DATA_DIR, 'train', data_transform)
-
-
-plt.figure()
-for i in range(1):
-    image_sample, label_sample = neuron_dataset[i]
-    print()
-
-    plt.subplot(1, 3, 1)
-    image = image_sample[0, :, :].numpy()
-    plt.imshow(image, cmap='gray')
-
-    plt.subplot(1, 3, 2)
-    white = label_sample[0, :, :].numpy()
-    plt.imshow(white, cmap='gray')
-
-    plt.subplot(1, 3, 3)
-    black = label_sample[1, :, :].numpy()
-    plt.imshow(black, cmap='gray')
-
-    plt.show()
+# neuron_dataset = NeuronDataset(DATA_DIR, 'train', data_transform)
+#
+#
+# plt.figure()
+# for i in range(1):
+#     image_sample, label_sample = neuron_dataset[i]
+#     print()
+#
+#     plt.subplot(1, 3, 1)
+#     image = image_sample[0, :, :].numpy()
+#     plt.imshow(image, cmap='gray')
+#
+#     plt.subplot(1, 3, 2)
+#     white = label_sample[0, :, :].numpy()
+#     plt.imshow(white, cmap='gray')
+#
+#     plt.subplot(1, 3, 3)
+#     black = label_sample[1, :, :].numpy()
+#     plt.imshow(black, cmap='gray')
+#
+#     plt.show()
 
 # neuron_dataset = {phase: NeuronDataset(DATA_DIR, phase, data_transform)}
+
+DATA_DIR = './data'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
