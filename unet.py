@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class UnetDown(nn.Module):
@@ -17,7 +18,7 @@ class UnetDown(nn.Module):
         )
 
     def forward(self, input):
-        return self.unet_conv(input)
+        return self.unet_unit(input)
 
 
 class UnetUp(nn.Module):
@@ -51,7 +52,7 @@ class Unet(nn.Module):
         self.unet_up1 = UnetUp(filters[4], filters[3])
         self.unet_up2 = UnetUp(filters[3], filters[2])
         self.unet_up3 = UnetUp(filters[2], filters[1])
-        sefl.unet_up4 = UnetUp(filters[1], filters[0])
+        self.unet_up4 = UnetUp(filters[1], filters[0])
 
         self.output = nn.Conv2d(filters[0], out_class, kernel_size=1)
 
