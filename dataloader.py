@@ -93,6 +93,8 @@ dataset_size = {phase: len(neuron_dataset[phase])
 neuron_dataloader = {phase: DataLoader(neuron_dataset[phase], batch_size=2, shuffle=True, num_workers=4)
                      for phase in ['train', 'val']}
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 # for i, sample in enumerate(neuron_dataloader['train']):
 #     model = Unet()
 #     output = model(sample[0])
