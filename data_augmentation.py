@@ -45,6 +45,10 @@ data_transform = {
     ])
 }
 
+def hardMax(input):
+    ones = torch.ones(input.size())
+    zeros = torch.zeros(input.size())
+    return torch.where(input >= 0.5, ones, zeros)
 
 
 

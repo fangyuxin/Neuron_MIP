@@ -1,26 +1,24 @@
-# Adapted from score written by wkentaro
-# https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/utils.py
 
 import numpy as np
 
 
-class runningScore(object):
-    def __init__(self, n_classes):
+class RunningScore(object):
+    def __init__(self, n_classes=2):
         self.n_classes = n_classes
         self.confusion_matrix = np.zeros((n_classes, n_classes))
 
-    def _fast_hist(self, label_true, label_pred, n_class):
-        mask = (label_true >= 0) & (label_true < n_class)
+    def _fast_hist(self, label_true, label_pred):
+        # mask = (label_true >= 0) & (label_true < n_class)
         hist = np.bincount(
-            n_class * label_true[mask].astype(int) + label_pred[mask],
-            minlength=n_class ** 2,
-        ).reshape(n_class, n_class)
+            self.n_classes * label_true + label_pred,
+            minlength=self.n_classes ** 2,
+        ).reshape(self.n_classes, self.n_classes)
         return hist
 
     def update(self, label_trues, label_preds):
         for lt, lp in zip(label_trues, label_preds):
             self.confusion_matrix += self._fast_hist(
-                lt.flatten(), lp.flatten(), self.n_classes
+                lt.flatten(), lp.flatten()
             )
 
     def get_scores(self):
@@ -40,15 +38,15 @@ class runningScore(object):
         fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
         cls_iu = dict(zip(range(self.n_classes), iu))
 
-        return (
-            {
-                "Overall Acc: \t": acc,
-                "Mean Acc : \t": acc_cls,
-                "FreqW Acc : \t": fwavacc,
-                "Mean IoU : \t": mean_iu,
-            },
-            cls_iu,
-        )
+
+        score = {
+                "Overall Acc": acc,
+                "Mean Acc": acc_cls,
+                "FreqW Acc": fwavacc,
+                "Mean IoU": mean_iu,
+                }
+
+        return score
 
     def reset(self):
         self.confusion_matrix = np.zeros((self.n_classes, self.n_classes))
@@ -74,7 +72,7 @@ class averageMeter(object):
 
     '''Test'''
 
-    # running_score = runningScore(2)
+    # running_score = RunningScore(2)
     #
     # label_true = np.array([[0,0,1],
     #               [1,1,0],
@@ -86,6 +84,6 @@ class averageMeter(object):
     #
     # running_score.update(label_true, label_pred)
     #
-    # print(running_score.get_scores())
+    # print(running_score.get_scores()['Mean IoU'])
 
 

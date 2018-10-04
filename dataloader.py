@@ -11,7 +11,7 @@ class NeuronDataset(Dataset):
         if self.phase == 'train':
             return 20
         if self.phase == 'val':
-            return 10
+            return 9
 
     def __getitem__(self, index):
         image = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
@@ -41,7 +41,7 @@ class NeuronDataset(Dataset):
         # _, label = cv2.threshold(label, 5, 255, cv2.THRESH_BINARY)
         # label = np.array(label)
 
-        label = image_white_black[1]
+        label = image_white_black[1].long()
         # label[1] = 255 - label[1]
 
         return image, label
