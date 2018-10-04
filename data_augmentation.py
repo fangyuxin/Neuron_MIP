@@ -4,10 +4,10 @@ class ImgAugTransform:
     def __init__(self):
         self.aug = iaa.Sequential([
             # iaa.Scale((256, 256)),
-            iaa.Fliplr(0.5),
+            # iaa.Fliplr(0.5),
             # iaa.PiecewiseAffine(scale=(0.0001, 0.0002)),
-            iaa.Affine(rotate=(-20, 20), mode='symmetric'),
-            iaa.Affine(shear=(-20, 20))
+            # iaa.Affine(rotate=(-20, 20), mode='symmetric'),
+            # iaa.Affine(shear=(-20, 20))
         ])
 
     def __call__(self, img):

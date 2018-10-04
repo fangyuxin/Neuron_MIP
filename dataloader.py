@@ -9,16 +9,24 @@ class NeuronDataset(Dataset):
 
     def __len__(self):
         if self.phase == 'train':
-            return 20
+            return 150
         if self.phase == 'val':
-            return 9
+            return 50
 
     def __getitem__(self, index):
-        image = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
-                                       'image', '{}.png'.format(index + 1)))
+        if self.phase == 'train':
+            image = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
+                                            'image', '{}.png'.format(index + 1)))
 
-        label = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
-                                       'label', '{}.png'.format(index + 1)))
+            label = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
+                                            'label', '{}.png'.format(index + 1)))
+
+        if self.phase == 'val':
+            image = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
+                                            'image', '{}.png'.format(index + 151)))
+
+            label = Image.open(os.path.join(self.data_dir, '{}'.format(self.phase),
+                                            'label', '{}.png'.format(index + 151)))
 
         # label.show()
         #
@@ -45,6 +53,42 @@ class NeuronDataset(Dataset):
         # label[1] = 255 - label[1]
 
         return image, label
+
+
+DATA_DIR = './data'
+
+neuron_dataset = {phase: NeuronDataset(DATA_DIR, phase, data_transform)
+                  for phase in ['train', 'val']}
+
+dataset_size = {phase: len(neuron_dataset[phase])
+                for phase in ['train', 'val']}
+
+neuron_dataloader = {phase: DataLoader(neuron_dataset[phase], batch_size=1, shuffle=True)
+                     for phase in ['train', 'val']}
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+plt.figure()
+for phase in ['train', 'val']:
+    for i, sample in enumerate(neuron_dataloader[phase]):
+        image, label = sample
+        # print()
+
+        plt.subplot(1, 2, 1)
+        plt.title('{}: num_{}'.format(phase, i + 1))
+        image = image[0, 0, ...].numpy()
+        plt.imshow(image, cmap='gray')
+
+        plt.subplot(1, 2, 2)
+        plt.title('{}: num_{}'.format(phase, i + 1))
+        label = label[0, ...].numpy()
+        plt.imshow(label, cmap='gray')
+
+        plt.show()
+
+        if i == 0:
+            break
 
 
 # neuron_dataset = NeuronDataset(DATA_DIR, 'train', data_transform)
@@ -80,20 +124,6 @@ class NeuronDataset(Dataset):
 #
 # output = model(image_sample)
 #
-
-
-DATA_DIR = './data'
-
-neuron_dataset = {phase: NeuronDataset(DATA_DIR, phase, data_transform)
-                  for phase in ['train', 'val']}
-
-dataset_size = {phase: len(neuron_dataset[phase])
-                for phase in ['train', 'val']}
-
-neuron_dataloader = {phase: DataLoader(neuron_dataset[phase], batch_size=2, shuffle=True, num_workers=4)
-                     for phase in ['train', 'val']}
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # for i, sample in enumerate(neuron_dataloader['train']):
 #     model = Unet()
