@@ -24,6 +24,20 @@ def train(model, criterion, optimzer, scheduler, num_epochs=10):
         running_scores.reset()
 
         for inputs, targets in neuron_dataloader[phase]:
+
+            plt.subplot(1, 2, 1)
+            # plt.title('{}: image_num_{}'.format(phase, i + 1))
+            image = inputs[0, 0, ...].numpy()
+            plt.imshow(image, cmap='gray')
+
+            plt.subplot(1, 2, 2)
+            # plt.title('{}: label_num_{}'.format(phase, i + 1))
+            # print()
+            label = targets[0, ...].numpy()
+
+            plt.imshow(label, cmap='gray')
+
+            plt.show()
             inputs = inputs.to(device)
             targets = targets.to(device)
 
@@ -66,8 +80,8 @@ model = Unet()
 model = nn.DataParallel(model)
 model.to(device)
 
-criterion = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 8.0]))
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+criterion = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 1.0]))
+optimizer = optim.SGD(model.parameters(), lr=0.00005, momentum=0.9)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 
