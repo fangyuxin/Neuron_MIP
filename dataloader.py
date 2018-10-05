@@ -9,7 +9,7 @@ class NeuronDataset(Dataset):
 
     def __len__(self):
         if self.phase == 'train':
-            return 80
+            return 120
         if self.phase == 'val':
             return 30
 
@@ -65,15 +65,15 @@ class NeuronDataset(Dataset):
         # else:
         #     image_white_black = transforms.ToTensor()
 
-        image = image_white_black[0].view(-1, *image_white_black[0].size())
+        image = image_white_black[0].view(-1, *image_white_black[0].size()) * 255
 
         # _, label = cv2.threshold(label, 5, 255, cv2.THRESH_BINARY)
         # label = np.array(label)
 
-        label = image_white_black[1] * 255
+        label = (image_white_black[1] * 255).long()
         # label[1] = 255 - label[1]
 
-        return image, label.long()
+        return image, label
 
 
 
@@ -88,7 +88,7 @@ neuron_dataset = {phase: NeuronDataset(DATA_DIR, phase, data_transform)
 dataset_size = {phase: len(neuron_dataset[phase])
                 for phase in ['train', 'val']}
 
-neuron_dataloader = {phase: DataLoader(neuron_dataset[phase], batch_size=2)
+neuron_dataloader = {phase: DataLoader(neuron_dataset[phase], batch_size=8, shuffle=True)
                      for phase in ['train', 'val']}
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -100,31 +100,31 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
-plt.figure()
-for phase in ['train', 'val']:
-    for i, sample in enumerate(neuron_dataloader[phase]):
-        image, label = sample
-        # print(label)
-        # print(label.sum())
-        print(label[0].sum())
-
-
-        plt.subplot(1, 2, 1)
-        plt.title('{}: image_num_{}'.format(phase, i + 1))
-        image = image[0, 0, ...].numpy()
-        plt.imshow(image, cmap='gray')
-
-        plt.subplot(1, 2, 2)
-        plt.title('{}: label_num_{}'.format(phase, i + 1))
-        # print()
-        label = label[0, ...].numpy()
-
-        plt.imshow(label, cmap='gray')
-
-        plt.show()
-
-        if i == 0:
-            break
+# plt.figure()
+# for phase in ['train', 'val']:
+#     for i, sample in enumerate(neuron_dataloader[phase]):
+#         image, label = sample
+#         # print(label)
+#         # print(label.sum())
+#         print(label[0].sum())
+#
+#
+#         plt.subplot(1, 2, 1)
+#         plt.title('{}: image_num_{}'.format(phase, i + 1))
+#         image = image[0, 0, ...].numpy()
+#         plt.imshow(image, cmap='gray')
+#
+#         plt.subplot(1, 2, 2)
+#         plt.title('{}: label_num_{}'.format(phase, i + 1))
+#         # print()
+#         label = label[0, ...].numpy()
+#
+#         plt.imshow(label, cmap='gray')
+#
+#         plt.show()
+#
+#         if i == 0:
+#             break
 
 
 # neuron_dataset = NeuronDataset(DATA_DIR, 'train', data_transform)

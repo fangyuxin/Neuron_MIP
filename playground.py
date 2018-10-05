@@ -18,15 +18,21 @@ import torch
 #
 # print(label_true[[True, True, True, True]])
 
-c = torch.tensor([[0.1, 0.1, 0.9],
-                  [0.2, 0.4, 0.7],
-                  [0.9, 0.7, 0.4]])
+# c = torch.tensor([[0.1, 0.1, 0.9],
+#                   [0.2, 0.4, 0.7],
+#                   [0.9, 0.7, 0.4]])
+#
+# a = torch.ones(c.size())
+# b = torch.zeros(3, 3)
+#
+#
+#
+# print(torch.where(c > 0.5, a, b))
 
-a = torch.ones(c.size())
-b = torch.zeros(3, 3)
 
+def zeros_or_ones(size):
+    return torch.ones(size) * 0.5 > torch.rand(size)
 
-
-print(torch.where(c > 0.5, a, b))
+print(zeros_or_ones((10, 10)))
 
 

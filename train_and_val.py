@@ -20,52 +20,58 @@ def train(model, criterion, optimzer, scheduler, num_epochs=10):
             else:
                 model.eval()
 
-        running_loss = 0.0
-        running_scores.reset()
+            running_loss = 0.0
+            running_scores.reset()
 
-        for inputs, targets in neuron_dataloader[phase]:
+            for i, sample in enumerate(neuron_dataloader[phase]):
 
-            plt.subplot(1, 2, 1)
-            # plt.title('{}: image_num_{}'.format(phase, i + 1))
-            image = inputs[0, 0, ...].numpy()
-            plt.imshow(image, cmap='gray')
+            # plt.subplot(1, 2, 1)
+            # # plt.title('{}: image_num_{}'.format(phase, i + 1))
+            # image = inputs[0, 0, ...].numpy()
+            # plt.imshow(image, cmap='gray')
+            #
+            # plt.subplot(1, 2, 2)
+            # # plt.title('{}: label_num_{}'.format(phase, i + 1))
+            # # print()
+            # label = targets[0, ...].numpy()
+            #
+            # plt.imshow(label, cmap='gray')
 
-            plt.subplot(1, 2, 2)
-            # plt.title('{}: label_num_{}'.format(phase, i + 1))
-            # print()
-            label = targets[0, ...].numpy()
+            # plt.show()
 
-            plt.imshow(label, cmap='gray')
 
-            plt.show()
-            inputs = inputs.to(device)
-            targets = targets.to(device)
+                inputs = sample[0].to(device)
+                targets = sample[1].to(device)
 
-            optimzer.zero_grad()
+                optimzer.zero_grad()
 
-            with torch.set_grad_enabled(phase == 'train'):
-                outputs = model(inputs)
-                loss = criterion(outputs, targets)
+                with torch.set_grad_enabled(phase == 'train'):
+                    outputs = model(inputs)
 
-                if phase == 'train':
-                    loss.backward()
-                    optimzer.step()
+                    dummy_outputs = torch.zeros(outputs.size())
+                    dummy_targets = zeros_or_ones(targets.size()).long()
 
-            running_loss += loss.item() * inputs.size(0)
-            m = torch.nn.Softmax2d()
-            hard_outputs = hardMax(m(outputs)[:, 1, :, :]).int()
-            # print(hard_outputs)
-            running_scores.update(hard_outputs.numpy(), targets.numpy())
+                    loss = criterion(outputs, targets)
 
-        epoch_loss = running_loss / dataset_size[phase]
-        epoch_score = running_scores.get_scores()['Mean IoU']
+                    if phase == 'train':
+                        loss.backward()
+                        optimzer.step()
 
-        print('{} Loss: {:.4f} IoU: {:.4f}'.format(
-            phase, epoch_loss, epoch_score))
+                running_loss += loss.item() * inputs.size(0)
+                m = torch.nn.Softmax2d()
+                hard_outputs = hardMax(m(outputs)[:, 1, :, :]).int()
+                # print(hard_outputs)
+                running_scores.update(hard_outputs.numpy(), targets.numpy())
 
-        if phase == 'val' and epoch_score > best_score:
-            best_score = epoch_score
-            best_model_wts = copy.deepcopy(model.state_dict())
+            epoch_loss = running_loss / dataset_size[phase]
+            epoch_score = running_scores.get_scores()['Mean IoU']
+
+            print('{} Loss: {:.4f} IoU: {:.4f}'.format(
+                phase, epoch_loss, epoch_score))
+
+            if phase == 'val' and epoch_score > best_score:
+                best_score = epoch_score
+                best_model_wts = copy.deepcopy(model.state_dict())
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
@@ -80,13 +86,13 @@ model = Unet()
 model = nn.DataParallel(model)
 model.to(device)
 
-criterion = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 1.0]))
-optimizer = optim.SGD(model.parameters(), lr=0.00005, momentum=0.9)
+criterion = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 1000.0]))
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 
 model = train(model, criterion, optimizer, exp_lr_scheduler,
-                       num_epochs=3)
+                       num_epochs=5)
 
 
 

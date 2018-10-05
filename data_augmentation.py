@@ -41,6 +41,9 @@ def hardMax(input):
 
 to_binary = hardMax
 
+def zeros_or_ones(size):
+    return torch.ones(size) * 0.5 > torch.rand(size)
+
 #
 #
 #
